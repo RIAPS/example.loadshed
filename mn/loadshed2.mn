@@ -1,0 +1,5 @@
+ h1 xterm -T "RIAPS control"  -e ./riaps-mn.ctrl &
+ h1 xterm -T "GLA" "GLA loadshed 2" -e "$ELSAPP/mn/riaps_gla.mn $ELSAPP/models/loadshed_2 loadshed_2" &
+ h2 xterm -T A1 -e ./riaps-mn.node &
+ h3 xterm -T A2 -e ./riaps-mn.node &
+ 

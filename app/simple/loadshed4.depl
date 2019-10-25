@@ -1,0 +1,13 @@
+// Deploy on two hosts (on dev vm, on mininet)
+app Loadshed {
+ //	on all ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
+	
+ // on all ControllerActor1(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
+ // on all ControllerActor2(sensor="n650.distribution_load.VA",actuator="sw_p01.sw_status.");
+ 
+ on (192.168.57.2) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
+ on (192.168.57.3) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p01.sw_status.");
+ on (192.168.57.4) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p02.sw_status.");
+ on (192.168.57.5) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p03.sw_status.");
+ 
+}

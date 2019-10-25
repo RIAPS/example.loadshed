@@ -1,0 +1,47 @@
+// RIAPS Loadshed example
+
+app Loadshed {
+    message CommandReq;
+    message CommandRep;
+    message Measurement;
+    message Status;
+     
+    device GridlabD {
+		rep command : (CommandReq, CommandRep);
+		pub data : Measurement;
+		inside relay;
+    }
+    
+    component Controller (sensor,actuator,threshold_u,threshold_l,priority) {
+    	timer trigger;					
+    	sub data : Measurement;
+    	req command : (CommandReq, CommandRep);
+    	pub updatestatus : Status;
+    	sub receivestatus : Status;
+    }
+
+	actor ControllerActor(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l,priority=priority);
+		}
+	}
+	
+	actor ControllerActor1(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l, priority=priority);
+		}
+	}
+	
+	actor ControllerActor2(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l,priority=priority);
+		}
+	}
+
+} 

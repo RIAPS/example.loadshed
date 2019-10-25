@@ -1,0 +1,7 @@
+!GLAConfig
+dbhost:     192.168.56.201
+dbport:     8086
+dbdrop:     False
+time_pace:  1
+time_stop:  21600
+time_base:  now

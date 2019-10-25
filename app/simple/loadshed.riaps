@@ -1,0 +1,44 @@
+// RIAPS GLA Interface
+
+app Loadshed {
+    message CommandReq;
+    message CommandRep;
+    message Measurement;
+     
+    device GridlabD {
+		rep command : (CommandReq, CommandRep);
+		pub data : Measurement;
+		inside relay;
+    }
+    
+    component Controller (sensor,actuator) {
+    	timer trigger;					
+    	sub data : Measurement;
+    	req command : (CommandReq, CommandRep);
+    }
+
+	actor ControllerActor(sensor,actuator) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator);
+		}
+	}
+	
+	actor ControllerActor1(sensor,actuator) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator);
+		}
+	}
+	
+	actor ControllerActor2(sensor,actuator) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator);
+		}
+	}
+
+} 

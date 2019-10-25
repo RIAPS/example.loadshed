@@ -1,0 +1,7 @@
+// Deploy on 4 nodes of MN
+app Loadshed {
+  on (192.168.57.1) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p01.sw_status.", priority = 1);
+  on (192.168.57.2) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p02.sw_status.", priority = 2);
+  on (192.168.57.3) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p03.sw_status.", priority = 3);
+  on (192.168.57.4) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p04.sw_status.", priority = 4);
+}

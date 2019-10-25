@@ -1,0 +1,77 @@
+// RIAPS GLA Interface
+
+app Loadshed {
+    message CommandReq;
+    message CommandRep;
+    message Measurement;
+    message Status;
+    message NodeState;
+    message Resend;
+    
+    // message structures:
+    // Status - {priority: (switch status, actor uuid)}
+    // NodeState - {uuid: ( name of actuator (switch), state of the node)}
+    // Resend -  {priority: (switch status, actor uuid)}
+     
+    device GridlabD {
+		ans command : (CommandReq, CommandRep);
+		pub data : Measurement;
+		inside relay;
+		//pub ready : Ready;
+		//timer notify 10000;
+    }
+    
+    component Controller (sensor,actuator,threshold_u,threshold_l,priority) {
+    	timer trigger;
+    	timer check 5000;
+    	qry command : (CommandReq, CommandRep);					
+    	sub data : Measurement;
+    	pub updatestatus : Status timed;
+    	sub receivestatus : Status timed;
+    	pub sendnodeinfo : NodeState;
+    	sub recvnodeinfo : NodeState;
+    	pub resendinfo : Resend;
+    	sub recvresendinfo: Resend;
+    }
+
+	actor ControllerActor(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l,priority=priority);
+		}
+	}
+	
+	// Carbon copies of the above (for testing in a single-host configuration) 
+	actor ControllerActor1(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l, priority=priority);
+		}
+	}
+	
+	actor ControllerActor2(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l,priority=priority);
+		}
+	}
+	
+	actor ControllerActor3(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,threshold_u=threshold_u,threshold_l=threshold_l,priority=priority);
+		}
+	}
+
+	actor ControllerActor4(sensor,actuator,threshold_u,threshold_l,priority) {
+		local Measurement, CommandReq, CommandRep;
+		{
+			gridlabd : GridlabD;
+			controller : Controller(sensor=sensor,actuator=actuator,priority=priority);
+		}
+	}
+} 

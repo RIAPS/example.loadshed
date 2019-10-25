@@ -1,0 +1,11 @@
+// Deploy on a single vm
+app Loadshed {
+	on all ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
+	
+ // on all ControllerActor1("n650.distribution_load.VA","sw_loadshed.sw_status.");
+ // on all ControllerActor2("n650.distribution_load.VA","sw_p01.sw_status.");
+ 
+ // on (n1) ControllerActor("n650.distribution_load.VA","sw_loadshed.sw_status.");
+ // on (n2) ControllerActor("n650.distribution_load.VA","sw_p01.sw_status.");
+ 
+}

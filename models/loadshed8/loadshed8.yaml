@@ -1,0 +1,52 @@
+--- 
+broker: "tcp://localhost:5570"
+name: loadshed
+time_delta: 1s
+values: 
+  n650.distribution_load: 
+    topic: gridlabdSim/n650.distribution_load
+  sw_loadshed.phase_A_state: 
+    topic: gridlabdSim/sw_loadshed.phase_A_state
+  sw_p02.phase_A_state: 
+    topic: gridlabdSim/sw_p02.phase_A_state
+  sw_p03.phase_A_state: 
+    topic: gridlabdSim/sw_p03.phase_A_state
+
+  m675.voltage_A:
+    topic: gridlabdSim/m675.voltage_A
+
+  mp02.voltage_A:
+    topic: gridlabdSim/mp02.voltage_A
+
+  mp03.voltage_A:
+    topic: gridlabdSim/mp03.voltage_A
+
+  sw_p04.phase_A_state: 
+    topic: gridlabdSim/sw_p04.phase_A_state
+
+  mp04.voltage_A:
+    topic: gridlabdSim/mp04.voltage_A
+
+  sw_p05.phase_A_state: 
+    topic: gridlabdSim/sw_p05.phase_A_state
+
+  mp05.voltage_A:
+    topic: gridlabdSim/mp05.voltage_A
+
+  sw_p06.phase_A_state: 
+    topic: gridlabdSim/sw_p06.phase_A_state
+
+  mp06.voltage_A:
+    topic: gridlabdSim/mp06.voltage_A
+
+  sw_p07.phase_A_state: 
+    topic: gridlabdSim/sw_p07.phase_A_state
+
+  mp07.voltage_A:
+    topic: gridlabdSim/mp07.voltage_A
+
+  sw_p08.phase_A_state: 
+    topic: gridlabdSim/sw_p08.phase_A_state
+
+  mp08.voltage_A:
+    topic: gridlabdSim/mp08.voltage_A

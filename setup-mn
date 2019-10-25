@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Setup some environment variables needed in mininet runs.
+
+# Root location of the example loadshed app
+export ELSAPP=`pwd`
+
+# Location of the GridlabD agent code
+
+# Edit the next line to point to the location of the GridlabD agent
+export GLADIR=~/workspace/gridlab-agent/
+# export GLADIR=~/workspace/interface.gridlabd.git 
+
+

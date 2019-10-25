@@ -1,0 +1,8 @@
+!GLAConfig
+dbhost:     192.168.56.201
+dbport:     8086
+dbdrop:     True
+time_pace:  5
+time_stop:  21600
+time_base:  now
+dbname:     gridlabd

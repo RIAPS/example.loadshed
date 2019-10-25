@@ -1,0 +1,765 @@
+#set profiler=1
+#set minimum_timestep=1
+#set relax_naming_rules=1
+module tape;
+module connection;
+module powerflow {
+  solver_method NR;
+  line_capacitance true;
+};
+clock {
+  timezone EST+5EDT;
+  stoptime '2000-01-01 6:00:00';
+  starttime '2000-01-01 0:00:00';
+};
+
+object metrics_collector_writer {
+  name metrics_collector_writer;
+  filename loadshed_metrics.json;
+  interval 60;
+};
+
+
+schedule load_profile_p01 {
+  * 22-23 * * * 9
+  * 10-12 * * * 9
+  * 16-18 * * * 15
+  * 13-15 * * * 12
+  * 7-9 * * * 6
+  * 19-21 * * * 12
+  * 4-6 * * * 3
+  * 1-3 * * * 1
+};
+schedule load_profile_l675 {
+  * 19-21 * * * 64
+  * 7-8 * * * 8
+  * 11-12 * * * 32
+  * 5-6 * * * 16
+  * 15-18 * * * 128
+  * 9-10 * * * 16
+  * 3-4 * * * 0.01
+  * 22-23 * * * 32
+  * 0 * * * 4
+  * 1-2 * * * 0.001
+  * 13-14 * * * 64
+};
+
+object fncs_msg {
+  subscribe precommit:sw_loadshed.phase_A_state <- loadshed/sw_loadshed.sw_status;
+  //subscribe precommit:sw_p01.phase_A_state <- loadshed/sw_p01.sw_status;
+  subscribe precommit:sw_p02.phase_A_state <- loadshed/sw_p02.sw_status;
+  publish commit:n650.distribution_load -> n650.distribution_load;
+  publish commit:sw_loadshed.phase_A_state -> sw_loadshed.phase_A_state;
+  //publish commit:sw_p01.phase_A_state -> sw_p01.phase_A_state;
+  publish commit:sw_p02.phase_A_state -> sw_p02.phase_A_state;
+  publish commit:m675.voltage_A -> m675.voltage_A;
+  //publish commit:mp01.voltage_A -> mp01.voltage_A;
+  //publish commit:p01.current_A -> p01.current_A;
+  publish commit:mp02.voltage_A -> mp02.voltage_A;
+  subscribe precommit:sw_p03.phase_A_state <- loadshed/sw_p03.sw_status;
+  publish commit:sw_p03.phase_A_state -> sw_p03.phase_A_state;
+  publish commit:mp03.voltage_A -> mp03.voltage_A;
+  subscribe precommit:sw_p04.phase_A_state <- loadshed/sw_p04.sw_status;
+  publish commit:sw_p04.phase_A_state -> sw_p04.phase_A_state;
+  publish commit:mp04.voltage_A -> mp04.voltage_A;
+  subscribe precommit:sw_p05.phase_A_state <- loadshed/sw_p05.sw_status;
+  publish commit:sw_p05.phase_A_state -> sw_p05.phase_A_state;
+  publish commit:mp05.voltage_A -> mp05.voltage_A;
+  subscribe precommit:sw_p06.phase_A_state <- loadshed/sw_p06.sw_status;
+  publish commit:sw_p06.phase_A_state -> sw_p06.phase_A_state;
+  publish commit:mp06.voltage_A -> mp06.voltage_A;
+  subscribe precommit:sw_p07.phase_A_state <- loadshed/sw_p07.sw_status;
+  publish commit:sw_p07.phase_A_state -> sw_p07.phase_A_state;
+  publish commit:mp07.voltage_A -> mp07.voltage_A;
+  subscribe precommit:sw_p08.phase_A_state <- loadshed/sw_p08.sw_status;
+  publish commit:sw_p08.phase_A_state -> sw_p08.phase_A_state;
+  publish commit:mp08.voltage_A -> mp08.voltage_A;
+  option transport:hostname localhost, port 5570;
+  name gridlabdSim;
+  parent n650;
+};
+
+object line_spacing {
+  distance_NE 24.0;
+  distance_CE 28.0;
+  distance_BE 28.0;
+  distance_AE 28.0;
+  distance_CN 5.0;
+  distance_AN 4.272002;
+  distance_BN 5.656854;
+  distance_BC 7.0;
+  distance_AC 4.5;
+  distance_AB 2.5;
+  name ls500601;
+};
+object overhead_line_conductor {
+  resistance 0.592000;
+  diameter 0.56 in;
+  geometric_mean_radius 0.00814;
+  name olc6020;
+};
+object overhead_line_conductor {
+  resistance 0.185900;
+  diameter 0.927 in;
+  geometric_mean_radius 0.031300;
+  name olc6010;
+};
+object line_configuration {
+  name lc601;
+  spacing ls500601;
+  conductor_N olc6020;
+  conductor_C olc6010;
+  conductor_B olc6010;
+  conductor_A olc6010;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_power_C 78000+45333.3333j;
+  constant_power_B 44000+25333.3333j;
+  constant_power_A 11333.333+6666.6667j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCN;
+  name l6321;
+};
+object underground_line_conductor {
+  shield_resistance 0.000000;
+  shield_gmr 0.000000;
+  insulation_relative_permitivitty 2.3;
+  neutral_strands 13.000000;
+  neutral_diameter 0.0640837;
+  neutral_resistance 14.87200;
+  neutral_gmr 0.0020800;
+  conductor_resistance 0.410000;
+  conductor_diameter 0.567000;
+  conductor_gmr 0.017100;
+  outer_diameter 1.290000;
+  name ulc6060;
+};
+object substation {
+  power_convergence_value 100VA;
+  base_power 12MVA;
+  positive_sequence_voltage 2400.0;
+  nominal_voltage 2401.7771;
+  bustype SWING;
+  phases ABCN;
+  name n650;
+};
+object recorder {
+  name recorder0;
+  file substation_load.csv;
+  interval 900.0;
+  property distribution_load;
+  parent n650;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_power_C 385000+220000j;
+  constant_power_B 385000+220000j;
+  constant_power_A 385000+220000j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCD;
+  name l671;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_power_C 39000+22666.6667j;
+  constant_power_B 22000+12666.6667j;
+  constant_power_A 5666.6667+3333.3333j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABC;
+  name l6711;
+  parent l671;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_C 0.00-57.6854j;
+  constant_current_C -6.5443+77.9524j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases CN;
+  name l611;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_current_C -17.2414+51.8677j;
+  constant_current_B 0+0j;
+  constant_current_A 0+0j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCD;
+  name l692;
+};
+object switch {
+  name sw_loadshed;
+  phases ABCN;
+  to l692;
+  from l671;
+};
+object underground_line_conductor {
+  shield_resistance 0.000000;
+  shield_gmr 0.000000;
+  insulation_relative_permitivitty 2.3;
+  neutral_strands 6.000000;
+  neutral_diameter 0.0640837;
+  neutral_resistance 0.970000;
+  neutral_gmr 0.011100;
+  conductor_resistance 0.970000;
+  conductor_diameter 0.368000;
+  conductor_gmr 0.011100;
+  outer_diameter 1.060000;
+  name ulc6070;
+};
+object node {
+  nominal_voltage 2401.7771;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCN;
+  name n680;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_C 0.00-28.8427j;
+  constant_impedance_B 0.00-28.8427j;
+  constant_impedance_A 0.00-28.8427j;
+  constant_power_C 290000+212000j;
+  constant_power_B 68000+60000j;
+  constant_power_A_real load_profile_l675*45000;
+  constant_power_A_reac load_profile_l675*19000;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABC;
+  name p07;
+};
+object switch {
+  name sw_p07;
+  phases ABCN;
+  from n680;
+  to p07;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_B 56.5993+32.4831j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  phases BCD;
+  name l646;
+};
+
+object line_spacing {
+  distance_NE 24.0;
+  distance_CE 28.0;
+  distance_BE 28.0;
+  distance_BN 5.0;
+  distance_CN 5.656854;
+  distance_BC 7.0;
+  name ls505603;
+};
+object overhead_line_conductor {
+  resistance 1.120000;
+  diameter 0.4 in;
+  geometric_mean_radius 0.004460;
+  name olc6030;
+};
+object line_configuration {
+  name lc603;
+  spacing ls505603;
+  conductor_N olc6030;
+  conductor_C olc6030;
+  conductor_B olc6030;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_power_B 170000+125000j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases BCN;
+  name l645;
+};
+object overhead_line {
+  length 300;
+  name line_645-646;
+  phases BCN;
+  configuration lc603;
+  from l645;
+  to l646;
+};
+object node {
+  nominal_voltage 2401.7771;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ACN;
+  name n684;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_current_C -17.2414+51.8677j;
+  constant_current_B 0+0j;
+  constant_current_A 0+0j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCD;
+  name p04;
+};
+object line_spacing {
+  distance_NE 24.0;
+  distance_CE 28.0;
+  distance_CN 5.0;
+  name ls510;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp04;
+  parent p04;
+};
+object node {
+  nominal_voltage 2401.7771;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771+0j;
+  phases ABCN;
+  name n630;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_current_C -17.2414+51.8677j;
+  constant_current_B 0+0j;
+  constant_current_A 0+0j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCD;
+  name p05;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp05;
+  parent p05;
+};
+object switch {
+  phases ABCN;
+  name sw_p05;
+  to p05;
+  from n630;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name m692;
+  parent l692;
+};
+object metrics_collector {
+  name metrics_collector_0;
+  interval 60;
+  parent m692;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_C 0.00-28.8427j;
+  constant_impedance_B 0.00-28.8427j;
+  constant_impedance_A 0.00-28.8427j;
+  constant_power_C 290000+212000j;
+  constant_power_B 68000+60000j;
+  constant_power_A_real load_profile_l675*45000;
+  constant_power_A_reac load_profile_l675*19000;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABC;
+  name p08;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp08;
+  parent p08;
+};
+object node {
+  nominal_voltage 2401.7771;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCN;
+  name np01;
+};
+object switch {
+  name sw_p08;
+  phases ABCN;
+  to p08;
+  from np01;
+};
+object node {
+  nominal_voltage 2401.7771;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCN;
+  name n632;
+};
+object overhead_line {
+  length 500;
+  name line_632-6321;
+  phases ABCN;
+  configuration lc601;
+  to l6321;
+  from n632;
+};
+object line_spacing {
+  distance_AC 1.000000;
+  distance_BC 0.500000;
+  distance_AB 0.500000;
+  name ls515;
+};
+object line_configuration {
+  name lc606;
+  spacing ls515;
+  conductor_C ulc6060;
+  conductor_B ulc6060;
+  conductor_A ulc6060;
+};
+object line_configuration {
+  name lc605;
+  spacing ls510;
+  conductor_N olc6030;
+  conductor_C olc6030;
+};
+object load {
+  nominal_voltage 480.000;
+  constant_power_C 120000+90000j;
+  constant_power_B 120000+90000j;
+  constant_power_A 160000+110000j;
+  voltage_C -240.000+415.6922j;
+  voltage_B -240.000-415.6922j;
+  voltage_A 480.000+0j;
+  phases ABCN;
+  name l634;
+};
+object node {
+  nominal_voltage 2401.7771;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCN;
+  name n633;
+};
+object transformer_configuration {
+  reactance 0.02;
+  resistance 0.011;
+  secondary_voltage 480;
+  primary_voltage 4160;
+  power_rating 5000;
+  install_type PADMOUNT;
+  connect_type WYE_WYE;
+  name tc400;
+};
+object transformer {
+  name transformer_633-634;
+  phases ABCN;
+  configuration tc400;
+  to l634;
+  from n633;
+};
+object line_spacing {
+  distance_NE 24.0;
+  distance_CE 28.0;
+  distance_BE 28.0;
+  distance_AE 28.0;
+  distance_BN 5.0;
+  distance_AN 4.272002;
+  distance_CN 5.656854;
+  distance_BC 7.0;
+  distance_AB 4.5;
+  distance_AC 2.5;
+  name ls500602;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_C 0.00-28.8427j;
+  constant_impedance_B 0.00-28.8427j;
+  constant_impedance_A 0.00-28.8427j;
+  constant_power_C 290000+212000j;
+  constant_power_B 68000+60000j;
+  constant_power_A_real load_profile_l675*45000;
+  constant_power_A_reac load_profile_l675*19000;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABC;
+  name l675;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name m675;
+  parent l675;
+};
+object overhead_line {
+  name line_n680_np01;
+  phases ABCN;
+  length 1000;
+  configuration lc601;
+  to np01;
+  from n680;
+};
+object line_spacing {
+  distance_NE 24.0;
+  distance_CE 28.0;
+  distance_AE 28.0;
+  distance_CN 5.0;
+  distance_AN 5.656854;
+  distance_AC 7.0;
+  name ls505604;
+};
+object line_configuration {
+  name lc604;
+  spacing ls505604;
+  conductor_N olc6030;
+  conductor_C olc6030;
+  conductor_A olc6030;
+};
+object overhead_line {
+  length 300;
+  name line_671-684;
+  phases ACN;
+  configuration lc604;
+  to n684;
+  from l671;
+};
+object underground_line {
+  length 500;
+  name line_692-675;
+  phases ABC;
+  configuration lc606;
+  to l675;
+  from l692;
+};
+object line_spacing {
+  distance_AN 0.083333;
+  name ls520;
+};
+object line_configuration {
+  name lc607;
+  spacing ls520;
+  conductor_N ulc6070;
+  conductor_A ulc6070;
+};
+
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_C 0.00-28.8427j;
+  constant_impedance_B 0.00-28.8427j;
+  constant_impedance_A 0.00-28.8427j;
+  constant_power_C 290000+212000j;
+  constant_power_B 68000+60000j;
+  constant_power_A_real load_profile_l675*45000;
+  constant_power_A_reac load_profile_l675*19000;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABC;
+  name p06;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp06;
+  parent p06;
+};
+object switch {
+  name sw_p06;
+  phases ABCN;
+  from n680;
+  to p06;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp07;
+  parent p07;
+};
+object line_configuration {
+  name lc602;
+  spacing ls500602;
+  conductor_N olc6020;
+  conductor_C olc6020;
+  conductor_B olc6020;
+  conductor_A olc6020;
+};
+object overhead_line {
+  length 500;
+  name line_632-633;
+  phases ABCN;
+  configuration lc602;
+  to n633;
+  from n632;
+};
+object switch {
+  phases ABCN;
+  name sw_p04;
+  to p04;
+  from n630;
+};
+object fault_check {
+  reliability_mode TRUE;
+  check_mode SWITCHING;
+  name test_fault;
+};
+object metrics_collector {
+  name metrics_collector;
+  interval 60;
+  parent m675;
+};
+object overhead_line {
+  length 500;
+  name line_632-645;
+  phases BCN;
+  configuration lc603;
+  to l645;
+  from n632;
+};
+object overhead_line {
+  length 2000;
+  name line_630-632;
+  phases ABCN;
+  configuration lc601;
+  to n632;
+  from n630;
+};
+object overhead_line {
+  length 1500;
+  name line_6321-671;
+  phases ABCN;
+  configuration lc601;
+  to l671;
+  from l6321;
+};
+object overhead_line {
+  length 1000;
+  name line_671-680;
+  phases ABCN;
+  configuration lc601;
+  to n680;
+  from l671;
+};
+object overhead_line {
+  length 300;
+  name line_684-611;
+  phases CN;
+  configuration lc605;
+  to l611;
+  from n684;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_impedance_A 31.0501+20.8618j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases AN;
+  name l652;
+};
+object underground_line {
+  length 800;
+  name line_684-652;
+  phases AN;
+  configuration lc607;
+  to l652;
+  from n684;
+};
+object metrics_collector {
+  name metrics_collector_1;
+  interval 60;
+  parent n650;
+};
+object regulator_configuration {
+  tap_pos_C 11;
+  tap_pos_B 8;
+  tap_pos_A 10;
+  Type A;
+  Control MANUAL;
+  regulation 0.10;
+  PT_phase ABC;
+  CT_phase ABC;
+  compensator_x_setting_C 9.0;
+  compensator_x_setting_B 9.0;
+  compensator_x_setting_A 9.0;
+  compensator_r_setting_C 3.0;
+  compensator_r_setting_B 3.0;
+  compensator_r_setting_A 3.0;
+  power_transducer_ratio 20;
+  current_transducer_ratio 700;
+  lower_taps 16;
+  raise_taps 16;
+  time_delay 30.0;
+  band_width 2.0;
+  band_center 122.000;
+  connect_type 1;
+  name regconfig6506321;
+};
+object regulator {
+  phases ABC;
+  name fregn650n630;
+  configuration regconfig6506321;
+  to n630;
+  from n650;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_current_C -17.2414+51.8677j;
+  constant_current_B 0+0j;
+  constant_current_A 0+0j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCD;
+  name p02;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp02;
+  parent p02;
+};
+object switch {
+  phases ABCN;
+  name sw_p02;
+  to p02;
+  from n632;
+};
+object load {
+  nominal_voltage 2401.7771;
+  constant_current_C -17.2414+51.8677j;
+  constant_current_B 0+0j;
+  constant_current_A 0+0j;
+  voltage_C -1200.8886+2080.000j;
+  voltage_B -1200.8886-2080.000j;
+  voltage_A 2401.7771;
+  phases ABCD;
+  name p03;
+};
+object meter {
+  nominal_voltage 2401.7771;
+  bill_mode UNIFORM;
+  name mp03;
+  parent p03;
+};
+object switch {
+  name sw_p03;
+  phases ABCN;
+  to p03;
+  from n632;
+};
