@@ -39,6 +39,8 @@ class Controller(Component):
         self.waitcounth = 0
         self.waitcountl = 0
         self.waittimeout = 10 # waiting timeout for peers to issue control commands
+        self.prev_on = 0 # store the number of lower priority switches that were on previously
+        self.prev_off = 0 # store the number of lower priority switches that were off previously
     
     def handleActivate(self):
         self.logger.info("handleActivate()")
@@ -108,11 +110,13 @@ class Controller(Component):
         # calculate the number of peers that are connected and are in "on" state
         counton = sum(1 for tup in self.node_state.values() if tup[1] == "on")
         # wait till switch info is received from all "on" pairs or till timeout occurs
+        val = self.status
         if len(self.global_status) >= counton or self.wait >= self.maxwait:
             # if the real part of the load exceeds the threshold 
             if power > self.thresh_u:
                 self.logger.info("Power consumption threshold exceeded !!!!")
-                wait = False
+                await = False
+                curr_on = 0
                 # search if a lower priority switch is present that is still connected
                 for key,value in self.global_status.items():
                     self.logger.info("value = %s" % str(value))
@@ -120,20 +124,28 @@ class Controller(Component):
                         continue
                     
                     if key > self.priority and value[0]== '1':
-                        self.logger.info("Waiting for lower priority switch")
-                        wait = True # lower priority switch exists
-                        break
-                if wait:
-                    # wait for lower priority switch until timeout
-                    if self.waitcounth >= self.waittimeout:
-                        self.waitcounth = 0
-                        val = '0'
-                        self.logger.info("lower priority switch not responding, timeout occurred")
-                        self.wait = 0
+#                         await = True
+#                         break
+                        curr_on += 1 # count the number of connected peers whose switches are on
+                # lower priority switch exists
+                if curr_on > 0:
+                    await = True
+                if await:
+                    # check if any of the lower priority switches took a control action
+                    if curr_on >= self.prev_on:
+                        if self.waitcounth >= self.waittimeout:
+                            self.waitcounth = 0
+                            val = '0'
+                            self.logger.info("lower priority switch not responding, timeout occurred")
+                            self.wait = 0
+                        else:
+                            # wait till timeout occurs
+                            val = self.status
+                            self.waitcounth +=1
+                            self.logger.info("Waiting for lower priority switch")
                     else:
-                        # wait till timeout occurs
-                        val = self.status
-                        self.waitcounth +=1
+                        self.logger.info("Waiting for lower priority switch")
+                        self.waitcounth = 0
     
                 else:
                     # the given switch is the current lowest priority switch
@@ -147,28 +159,42 @@ class Controller(Component):
                         self.retrycountu += 1
                         val = self.status
                         self.logger.info("waiting for actuation to take effect")
+                        
+                self.prev_off = self.prev_off + (curr_on - self.prev_on)
+                self.prev_on = curr_on
             
             # if the real power goes below a threshold apply same logic but in reverse order of priority            
             elif power < self.thresh_l:
                 self.logger.info("Power consumption lowered")
-                wait = False
+                await = False
+                curr_off = 0
                 for key,value in self.global_status.items():
                     
                     if self.node_state[value[1]][1] is "off":
                         continue
                     if key < self.priority and value[0] == '0':
-                        self.logger.info("Waiting for higher priority switch")
-                        wait = True
-                        break
-                if wait:
-                    if self.waitcountl >= self.waittimeout:
-                        self.waitcountl = 0
-                        val = '1'
-                        self.logger.info("higher priority switch not responding, timeout occurred")
-                        self.wait = 0
+#                         wait = True
+#                         break
+                        curr_off += 1 # count the number of connected peers whose switches are off
+                # higher priority switch exists
+                if curr_off > 0:
+                    await = True
+                # check if any of the higher priority switches took a control action
+                if await:
+                    if curr_off >= self.prev_off:
+                        if self.waitcountl >= self.waittimeout:
+                            self.waitcountl = 0
+                            val = '1'
+                            self.logger.info("higher priority switch not responding, timeout occurred")
+                            self.wait = 0
+                        else:
+                            # wait till timeout occurs
+                            val = self.status
+                            self.waitcountl +=1
+                            self.logger.info("Waiting for higher priority switch")
                     else:
-                        val = self.status
-                        self.waitcountl +=1
+                        self.logger.info("Waiting for higher priority switch")
+                        self.waitcountl = 0
                     
     
                 else:
@@ -181,6 +207,8 @@ class Controller(Component):
                         self.retrycountl += 1
                         val = self.status
                         self.logger.info("waiting for actuation to take effect")
+                self.prev_on = self.prev_on + (curr_off - self.prev_off)
+                self.prev_off = curr_off
                 
             else:
                 val = self.status
@@ -225,6 +253,9 @@ class Controller(Component):
 #             self.pending += 1
 #             self.lastValue = value
         power = msg[2] # get measurement value
+        if power.real < 3e06:
+            self.thresh_l = 5e06
+            self.thresh_u = 5.8e06
         self.logger.info(str(power))
 #         if power.real > self.threshold:
         value =self.controlswitch(power.real) # calculate the control action
@@ -301,9 +332,9 @@ class Controller(Component):
                 self.node_state[value[1]] = (self.node_state[value[1]][0],"unknown")
                 msg.append(value[1])
                 
-            if len(msg)> 0:
-                self.logger.info("requesting status from %s" % str(msg))
-                self.resendinfo.send_pyobj(msg)
+        if len(msg)> 0:
+            self.logger.info("requesting status from %s" % str(msg))
+            self.resendinfo.send_pyobj(msg)
             
 #     def on_ready(self):l
 #         msg = self.ready.recv_pyobj()
@@ -330,6 +361,7 @@ class Controller(Component):
         if self.uuid in info:
             self.logger.info("%s resending status message" % self.aObj)
             self.updatestatus.send_pyobj({self.priority : (self.status, self.uuid)})
+            self.sendnodeinfo.send_pyobj({self.uuid : (self.aObj, 'on')})
         
     def __destroy__(self):
         self.logger.info("Controller.__destroy__()")                         
