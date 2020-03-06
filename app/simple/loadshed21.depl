@@ -1,4 +1,6 @@
-// Deploy on two actors (on dev vm) - use a common gridlabd device
+// Simple loadshed app
+// Deploy on two actors (on dev vm)
+
 app Loadshed {
  //	on all ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
 	

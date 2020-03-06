@@ -1,4 +1,6 @@
-// Deploy on two hosts (on dev vm, on mininet)
+// Simple loadshed app
+// Deploy on four hosts (on mininet)
+
 app Loadshed {
  //	on all ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
 	

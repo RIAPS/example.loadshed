@@ -1,4 +1,5 @@
-// RIAPS GLA Interface
+// RIAPS Loadshed app
+// Robust example
 
 app Loadshed {
     message CommandReq;

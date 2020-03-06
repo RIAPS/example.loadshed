@@ -1,4 +1,5 @@
-// RIAPS Loadshed example
+// RIAPS Loadshed app
+// Multi example
 
 app Loadshed {
     message CommandReq;

@@ -1,4 +1,7 @@
-// Deploy on 8 nodes of MN
+// RIAPS Loadshed app
+// Robust example
+
+// Deploy on 4 nodes of MN
 app Loadshed {
   on (192.168.57.1) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.",threshold_u=2.39e06,threshold_l=2.2e06, priority = 1);
   on (192.168.57.2) ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_p02.sw_status.", threshold_u=2.39e06,threshold_l=2.2e06,priority = 2);

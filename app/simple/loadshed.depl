@@ -1,4 +1,6 @@
-// Deploy on a single vm
+// Simple loadshed app
+// Deploy on a single node (the vm)
+
 app Loadshed {
 	on all ControllerActor(sensor="n650.distribution_load.VA",actuator="sw_loadshed.sw_status.");
 	

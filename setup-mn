@@ -3,12 +3,13 @@
 # Setup some environment variables needed in mininet runs.
 
 # Root location of the example loadshed app
-export ELSAPP=`pwd`
+export APP=`pwd`
+[ -z "$RIAPSHOME" ] && export RIAPSHOME=/usr/local/riaps   
+[ -z "$RIAPSAPPS" ] && export RIAPSAPPS=/home/riaps/riaps_apps
 
 # Location of the GridlabD agent code
 
 # Edit the next line to point to the location of the GridlabD agent
-export GLADIR=~/workspace/gridlab-agent/
-# export GLADIR=~/workspace/interface.gridlabd.git 
+export GLA=~/workspace/interface.gridlabd.git 
 
 

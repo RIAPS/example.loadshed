@@ -1,4 +1,5 @@
-// RIAPS GLA Interface
+// RIAPS Loadshed app
+// Simple app
 
 app Loadshed {
     message CommandReq;
@@ -25,6 +26,7 @@ app Loadshed {
 		}
 	}
 	
+	// Additional actor types for testing
 	actor ControllerActor1(sensor,actuator) {
 		local Measurement, CommandReq, CommandRep;
 		{

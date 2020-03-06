@@ -13,7 +13,7 @@
 # export HOST=127.0.0.1
 export HOST=192.168.57.1
 
-# Launch GLA
-# GLADIR must be set
-echo "python3 $GLADIR/riaps_gla.py $1 $2" | sudo -E -s -u riaps
+# Launch GridlabD Agent 
+# GLA must be set
+echo "python3 $GLA/riaps_gla.py $1 $2" | sudo -E -s -u riaps
 

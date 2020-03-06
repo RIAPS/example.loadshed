@@ -1,13 +1,13 @@
 Loadshed application 
 ====================
 
-The loadshed application demonstrates how loadshedding can be implemented in RIAPS. The application 
-uses the GridlabD interface to connect to a simulated power network,
-receive simulated measurement data from it, and to control various switched loads in the simulation. 
+The loadshed application demonstrates how loadshedding algorithm can be implemented in RIAPS. The application 
+uses the GridlabD interface to connect to a simulated power network, receive simulated measurement data from it, 
+and control various switched loads in the simulation. 
 
 There are 3 variants of the loadshed example application:
-- app/simple: Simple control of one load switch, based on a fixed duty cycle.
-- app/multi:  Multi-level control of 1+ load switches, based on thresholds.
+- app/simple: Simple control of one load switch, based on a fixed duty cycle. [OBSOLETE]
+- app/multi:  Multi-level control of 1+ load switches, based on thresholds. [OBSOLOTE]
 - app/robust: Multi-level control of 1+ load switches, based on thresholds and priorities. Also demonstrates how fault-tolerance can be implemented in an app. 
 
 The app parameters in the depl files control what 'sensor' and 'actuator' signal/s is/are the controller/s connected to. 
@@ -28,15 +28,58 @@ List of working apps and models:
 |                       | loadshed32              | robust/loadshded8-mn.depl  | 8 loads + 8 mininet    | 8, loadshed8.mn       |
 |                       | loadshed32              | robust/loadshed32-bbb.depl | 32 loads + on 32 bbb-s | N/A                   | 
 
+Recommend: use only the app in robust/, with mininet (see below) and 4 or 8 nodes. 
+ 
 The folders:
 - /app: app variants
 - /models: power system models
 - /mn: mininet scripts to launch the simulation and RIAPS tools to run the app. 
 
-To start a mininet-based run:
-- $ source setup-mn
-- Start mininet (with an optional argument indicating the number of virtual hosts to be create) under RIAPS.
-- At the mininet prompt:
-  mininet> source PATH/mn/SCRIPT
-  where PATH is the full pathname of the root folder and SCRIPT is the name of the .mn script 
+Running the app with Mininet
+----------------------------
+
+The apps can run on the development VM (that has RIAPS installed) under mininet. 
+
+Note: rpyc_registry, and riaps services (e.g. riaps_deplo) must NOT be running on the VM.
+These can be halted as follows:
+	systemctl disable riaps-deplo.service
+	systemctl stop riaps-deplo.service || true
+	systemctl disable riaps-rpyc-registry.service
+	systemctl stop riaps-rpyc-registry.service || true
+
+Note: edit the file setup-mn to point to the correct location of the GridlabdD agent.
+
+To start a mininet-based run (in this directory).
+   source setup-mn
+   riaps-mn N
+where N is the number of virtual mininet hosts to be launched.
+ At the mininet prompt:
+    mininet> source mn/SCRIPT
+ where SCRIPT is the name of the .mn script. (e.g. loadshed4.mn).
+ Note: mininet does not handle exceptions well, so if the last command fails it may leave the 
+ (virtual) network intefaces behind - and a restart of the VM may be necessary.
+ Note: the starup on the virtual nodes can take a few seconds.
+ 
+ The simulation logs changes into InfluxDB (as specified in models/*/loadshed.gll), 
+ the results can be accessed using the Grafana on localhost:3000.
+ 
+ Running the app with Mininet in a RIAPS development environment
+ ----------------------------------------------------------------
+ 
+The app can be run on a VM that is being used to develop RIAPS as follows.
+Assume $RIAPS points to the root folder of the RIAPS source tree, and $APP points to this folder.
+	cd $RIAPS 
+	source setup
+	cd $APP
+	souce setup-mn.dev
+	riaps-mn N
+where N is the number of virtual mininet hosts to be launched.
+
+
+	
+	
+  
+  
+  
+ 
   
