@@ -23,13 +23,13 @@
     
     - CommandReq: The client component uses these messages to control the agent.
       [ 'sub', (ObjectName, AttributeName, Unit) ] - instruct the agent to start publishing measurement data from the Object.Attribute of the model. 
-      [ 'pub', (ObjectName, AttributeName, Value, Unit)] - set the value of the selected Object.Attribute. 
+      [ 'set', (ObjectName, AttributeName, Value, Unit)] - set the value of the selected Object.Attribute. 
       [ 'qry', (ObjectName, AttributeName, Unit) ] - query the last known value of the Object.Attribute. 
     - CommandRep: The agent replies with these messages to the commands.
-      'ok' - Reply for 'sub', 'pub', commands
-      (ObjectName, AttributeName, Value, Unit, TimeStamp) - Response to query, the value of the requested Object.Attribute.
+      'ok' - Reply for 'sub', 'set', commands
+      (ObjectName, AttributeName, Value, TimeStamp) - Response to query, the value of the requested Object.Attribute.
     - Measurement: Data messages that are published by the agent (as requested by a 'sub' command)
-      (ObjectName, AttributeName, Value, Unit, TimeStamp) - The value of the selected Object.Attribute.
+      (ObjectName, AttributeName, Value, TimeStamp) - The value of the selected Object.Attribute.
 '''
 
 import time
@@ -95,11 +95,11 @@ class GLAClient(threading.Thread):
                         self.conn = rpyc.connect(host,port,
                                                  config = {"allow_public_attrs" : True})
                     except socket.error as e:
-                        print("%s.%s: %s" %(str(host),str(port),str(e)))
+                        self.logger.error("%s.%s: %s" %(str(host),str(port),str(e)))
                         pass
                     if self.conn: break
             except DiscoveryError:
-                self.logger.info("discovery of %s failed" % (GLAClient.SERVICENAME))
+                self.logger.error("discovery of %s failed" % (GLAClient.SERVICENAME))
                 pass
             if self.conn: break
             if self.host and self.port:
@@ -107,7 +107,7 @@ class GLAClient(threading.Thread):
                     self.conn = rpyc.connect(self.host,self.port,
                                              config = {"allow_public_attrs" : True})
                 except socket.error as e:
-                    print("%s.%s: %s" %(str(host),str(port),str(e)))
+                    self.logger.error("%s.%s: %s" %(str(host),str(port),str(e)))
                     pass
             if self.conn: break
             if retry == False:
@@ -190,13 +190,13 @@ class GLAClient(threading.Thread):
                             if s == self.relay:
                                 msg = self.relay.recv_pyobj()
                                 # msg = ['sub', ( obj, attr, unit ) ... ] -- Subscribe   
-                                # msg = ['pub', ( obj, attr, unit ) ... ] -- Publish
+                                # msg = ['set', ( obj, attr, unit ) ... ] -- Publish
                                 # msg = ['qry', id, ( obj, attr, unit ) ... ] -- Query 
                                 self.logger.info("run: relay recv = %s" % str(msg))
                                 cmd = msg[0]
                                 if cmd == 'sub':
                                     self.subscribe(msg[1:])
-                                elif cmd == 'pub': 
+                                elif cmd == 'set': 
                                     self.publish(msg[1:])
                                 elif cmd == 'qry':
                                     self.query(msg[1],msg[2:])
@@ -267,6 +267,9 @@ class GLAClient(threading.Thread):
         self.active.set()
         self.terminated.set()
         self.logger.info('GLAClient terminating')
+        
+    def get_plug(self):
+        return self.relay
 
 class GridlabD(Component):
     def __init__(self, host='', port=0):
@@ -283,7 +286,11 @@ class GridlabD(Component):
             clientName = "GLA-%s" % str(hex(int.from_bytes(self.getActorID(),'big')))
             self.glaClient = GLAClient(self,clientName,self.host,self.port,self.relay,self.logger)
             self.glaClient.start()         # Run the thread
+            plug = None
+            while plug is None:
+                plug = self.glaClient.get_plug()
             time.sleep(0.1)
+            self.plugID = self.relay.get_plug_identity(plug)
             self.relay.activate()
             self.glaClient.activate()
             self.running = True
@@ -299,18 +306,21 @@ class GridlabD(Component):
         if not self.running:
             self.logger.info("GLA Client not running")
             return
-        if cmd == 'pub' : 
-            # msg = [ 'pub'  , ( 'obj', 'attr', 'unit' ) ... ] -- Publish
+        if cmd == 'set' : 
+            # msg = [ 'set'  , ( 'obj', 'attr', 'unit' ) ... ] -- Publish
+            self.relay.set_identity(self.plugID)
             self.relay.send_pyobj(msg)
             self.command.send_pyobj('ok')
         elif cmd == 'sub':
-            # msg = [ 'sub'  , ( 'obj', 'attr', 'unit' ) ... ] -- Subscribe   
+            # msg = [ 'sub'  , ( 'obj', 'attr', 'unit' ) ... ] -- Subscribe
+            self.relay.set_identity(self.plugID)   
             self.relay.send_pyobj(msg)
             self.command.send_pyobj('ok')
         elif cmd == 'qry':
             # msg = [ 'qry'  , ( 'obj', 'attr', 'unit' ) ... ] -- Query
             id = self.command.get_identity()
             qry = [cmd,id] + msg[1:]
+            self.relay.set_identity(self.plugID)
             self.relay.send_pyobj(qry)
         else:
             self.logger.error("GridlabdD.on_command: unknown command: %s" % str(msg))
